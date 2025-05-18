@@ -231,49 +231,49 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const addProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
-  try {
-    const token = localStorage.getItem('ecofinds_token');
-    
-    const response = await fetch('/api/products', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(productData)
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to create product');
+    try {
+      const token = localStorage.getItem('ecofinds_token');
+      
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(productData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create product');
+      }
+      
+      const newProduct = await response.json();
+      
+      // Update local state with the new product
+      const formattedProduct = {
+        ...newProduct,
+        id: newProduct._id
+      };
+      
+      setUserProducts(prev => [formattedProduct, ...prev]);
+      setProducts(prev => [formattedProduct, ...prev]);
+      
+      toast({
+        title: "Success",
+        description: "Product created successfully",
+      });
+      
+      return formattedProduct;
+    } catch (error) {
+      console.error('Error creating product:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create product",
+      });
+      throw error;
     }
-    
-    const newProduct = await response.json();
-    
-    // Update local state with the new product
-    const formattedProduct = {
-      ...newProduct,
-      id: newProduct._id
-    };
-    
-    setUserProducts([formattedProduct, ...userProducts]);
-    setProducts([formattedProduct, ...products]);
-    
-    toast({
-      title: "Success",
-      description: "Product created successfully",
-    });
-    
-    return formattedProduct;
-  } catch (error) {
-    console.error('Error creating product:', error);
-    toast({
-      variant: "destructive",
-      title: "Error",
-      description: "Failed to create product",
-    });
-    throw error;
-  }
-};
+  };
 
   // Delete a product
   const deleteProduct = async (id: string) => {
