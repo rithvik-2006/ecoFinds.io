@@ -10,7 +10,7 @@ export interface IUser {
 }
 
 export interface IUserModel extends mongoose.Model<IUserDocument> {
-  findByCredentials(email: string, password: string): Promise<IUserDocument>;
+  findByCredentials(email: string, password: string): Promise<IUserDocument | null>;
 }
 
 export interface IUserDocument extends IUser, mongoose.Document {
@@ -25,16 +25,18 @@ const UserSchema = new mongoose.Schema<IUserDocument, IUserModel>(
       unique: true,
       trim: true,
       lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
     },
     password: {
       type: String,
       required: [true, 'Please provide a password'],
-      minlength: 6,
+      minlength: [6, 'Password must be at least 6 characters long'],
     },
     username: {
       type: String,
       required: [true, 'Please provide a username'],
       trim: true,
+      minlength: [3, 'Username must be at least 3 characters long'],
     },
   },
   { timestamps: true }
@@ -45,7 +47,8 @@ UserSchema.pre('save', async function (next) {
   const user = this;
   if (user.isModified('password')) {
     try {
-      user.password = await bcrypt.hash(user.password, 10);
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(user.password, salt);
     } catch (error) {
       console.error('Error hashing password:', error);
       return next(error as Error);
@@ -70,19 +73,19 @@ UserSchema.statics.findByCredentials = async function (email: string, password: 
     const user = await this.findOne({ email });
     if (!user) {
       console.log('User not found:', email);
-      throw new Error('Invalid login credentials');
+      return null;
     }
     
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       console.log('Password mismatch for user:', email);
-      throw new Error('Invalid login credentials');
+      return null;
     }
     
     return user;
   } catch (error) {
     console.error('Error in findByCredentials:', error);
-    throw error;
+    return null;
   }
 };
 

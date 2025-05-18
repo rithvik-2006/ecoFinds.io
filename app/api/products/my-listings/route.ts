@@ -1,32 +1,36 @@
 // app/api/products/my-listings/route.ts
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
-import Product from '@/models/Product';
+import { connectDB } from '@/lib/db';
+import { Product } from '@/models/Product';
 import { verifyToken } from '@/lib/auth-utils';
 
 export async function GET(request: Request) {
   try {
-    const userId = await verifyToken(request);
-    
-    if (!userId) {
-      return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-    
+    // Connect to database
     await connectDB();
-    
+
+    // Get token from header
+    const token = request.headers.get("authorization")?.split(" ")[1];
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Verify token and get user ID
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
     // Get user's products
-    const products = await Product.find({ userId })
-      .sort({ createdAt: -1 });
-    
-    return NextResponse.json({ products });
-    
+    const products = await Product.find({ seller: decoded.userId })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return NextResponse.json(products);
   } catch (error) {
-    console.error('My listings fetch error:', error);
+    console.error('Error fetching user\'s products:', error);
     return NextResponse.json(
-      { message: 'Error fetching your listings' },
+      { error: 'Failed to fetch products' },
       { status: 500 }
     );
   }

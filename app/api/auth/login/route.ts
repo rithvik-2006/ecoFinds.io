@@ -1,69 +1,49 @@
-import mongoose from 'mongoose';
-import User from '@/models/User';
-import { generateToken } from '@/lib/auth-utils';
-import { connectDB } from '@/lib/db';
+import { NextResponse } from "next/server"
+import { connectDB } from "@/lib/db"
+import User from "@/models/User"
+import { generateToken } from "@/lib/auth-utils"
 
 export async function POST(request: Request) {
   try {
-    await connectDB();
-    
-    const { email, password } = await request.json();
-    
+    await connectDB()
+
+    const { email, password } = await request.json()
+
+    // Validate input
     if (!email || !password) {
-      console.log('Missing credentials:', { email: !!email, password: !!password });
-      return new Response(JSON.stringify({ 
-        success: false,
-        error: 'Email and password are required'
-      }), {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      return NextResponse.json(
+        { error: "Email and password are required" },
+        { status: 400 }
+      )
     }
-    
-    try {
-      const user = await User.findByCredentials(email, password);
-      
-      // Generate JWT token
-      const token = generateToken(user._id.toString());
-      
-      return new Response(JSON.stringify({ 
-        success: true,
-        token,
-        user: {
-          id: user._id,
-          email: user.email,
-          username: user.username
-        }
-      }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-    } catch (error) {
-      console.error('Authentication error:', error);
-      return new Response(JSON.stringify({ 
-        success: false,
-        error: 'Invalid email or password'
-      }), {
-        status: 401,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+
+    // Find user and verify credentials
+    const user = await User.findByCredentials(email, password)
+    if (!user) {
+      return NextResponse.json(
+        { error: "Invalid email or password" },
+        { status: 401 }
+      )
     }
+
+    // Generate token
+    const token = generateToken(user._id)
+
+    // Return user data and token
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+      },
+      token,
+    })
   } catch (error) {
-    console.error('Login error:', error);
-    return new Response(JSON.stringify({ 
-      success: false,
-      error: error instanceof Error ? error.message : 'Login failed'
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    console.error("Login error:", error)
+    return NextResponse.json(
+      { error: "Failed to login" },
+      { status: 500 }
+    )
   }
 }

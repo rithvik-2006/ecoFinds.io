@@ -12,10 +12,7 @@ export async function POST(request: Request) {
     // Validate input
     if (!email || !password || !username) {
       return NextResponse.json(
-        { 
-          success: false,
-          error: 'Email, password, and username are required' 
-        },
+        { error: 'All fields are required' },
         { status: 400 }
       );
     }
@@ -24,10 +21,7 @@ export async function POST(request: Request) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { 
-          success: false,
-          error: 'Invalid email format' 
-        },
+        { error: 'Invalid email format' },
         { status: 400 }
       );
     }
@@ -35,10 +29,7 @@ export async function POST(request: Request) {
     // Validate password strength
     if (password.length < 6) {
       return NextResponse.json(
-        { 
-          success: false,
-          error: 'Password must be at least 6 characters long' 
-        },
+        { error: 'Password must be at least 6 characters long' },
         { status: 400 }
       );
     }
@@ -47,15 +38,12 @@ export async function POST(request: Request) {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
-        { 
-          success: false,
-          error: 'Email already in use' 
-        },
+        { error: 'Email already registered' },
         { status: 400 }
       );
     }
     
-    // Create new user (password will be hashed by the User model's pre-save middleware)
+    // Create new user
     const user = new User({
       email,
       password,
@@ -64,27 +52,23 @@ export async function POST(request: Request) {
     
     await user.save();
     
-    // Generate JWT token
-    const token = generateToken(user._id.toString());
+    // Generate token for auto-login
+    const token = generateToken(user._id);
     
-    // Return user data (excluding password) and token
     return NextResponse.json({
       success: true,
-      token,
       user: {
         id: user._id,
         email: user.email,
         username: user.username,
-      }
+      },
+      token,
     });
     
   } catch (error) {
     console.error('Signup error:', error);
     return NextResponse.json(
-      { 
-        success: false,
-        error: error instanceof Error ? error.message : 'Error creating user'
-      },
+      { error: 'Failed to create account' },
       { status: 500 }
     );
   }
