@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
@@ -21,16 +20,6 @@ type AuthContextType = {
   updateProfile: (username: string) => Promise<void>
 }
 
-// Mock data for demonstration
-const MOCK_USERS = [
-  {
-    id: "1",
-    email: "user@example.com",
-    password: "password123",
-    username: "ecouser",
-  },
-]
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -40,9 +29,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast()
 
   useEffect(() => {
-    // Check for stored user in localStorage
+    // Check for stored user and token in localStorage
     const storedUser = localStorage.getItem("ecofinds_user")
-    if (storedUser) {
+    const token = localStorage.getItem("ecofinds_token")
+    
+    if (storedUser && token) {
       setUser(JSON.parse(storedUser))
     }
     setLoading(false)
@@ -51,102 +42,121 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     setLoading(true)
     try {
-      // Simulate API call
-      const foundUser = MOCK_USERS.find((u) => u.email === email && u.password === password)
-
-      if (!foundUser) {
-        throw new Error("Invalid credentials")
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
       }
-
-      const { password: _, ...userWithoutPassword } = foundUser
-      setUser(userWithoutPassword)
-      localStorage.setItem("ecofinds_user", JSON.stringify(userWithoutPassword))
+      
+      const data = await response.json();
+      
+      setUser(data.user);
+      localStorage.setItem("ecofinds_user", JSON.stringify(data.user));
+      localStorage.setItem("ecofinds_token", data.token);
 
       toast({
         title: "Login successful",
         description: "Welcome back to EcoFinds!",
-      })
+      });
 
-      router.push("/dashboard")
+      router.push("/dashboard");
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Login failed",
         description: error instanceof Error ? error.message : "An error occurred",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   const signUp = async (email: string, password: string, username: string) => {
     setLoading(true)
     try {
-      // Simulate API call
-      if (MOCK_USERS.some((u) => u.email === email)) {
-        throw new Error("Email already in use")
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, username }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Signup failed');
       }
-
-      const newUser = {
-        id: String(MOCK_USERS.length + 1),
-        email,
-        password,
-        username,
-      }
-
-      MOCK_USERS.push(newUser)
-
-      const { password: _, ...userWithoutPassword } = newUser
-      setUser(userWithoutPassword)
-      localStorage.setItem("ecofinds_user", JSON.stringify(userWithoutPassword))
+      
+      const data = await response.json();
+      
+      setUser(data.user);
+      localStorage.setItem("ecofinds_user", JSON.stringify(data.user));
+      localStorage.setItem("ecofinds_token", data.token);
 
       toast({
         title: "Account created",
         description: "Welcome to EcoFinds!",
-      })
+      });
 
-      router.push("/dashboard")
+      router.push("/dashboard");
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Signup failed",
         description: error instanceof Error ? error.message : "An error occurred",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   const signOut = () => {
-    setUser(null)
-    localStorage.removeItem("ecofinds_user")
-    router.push("/")
+    setUser(null);
+    localStorage.removeItem("ecofinds_user");
+    localStorage.removeItem("ecofinds_token");
+    router.push("/");
 
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
-    })
+    });
   }
 
   const updateProfile = async (username: string) => {
-    if (!user) return
-
+    if (!user) return;
+    
     try {
-      // Simulate API call
-      const updatedUser = { ...user, username }
-      setUser(updatedUser)
-      localStorage.setItem("ecofinds_user", JSON.stringify(updatedUser))
+      const token = localStorage.getItem("ecofinds_token");
+      const response = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ username }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+      
+      const updatedUser = { ...user, username };
+      setUser(updatedUser);
+      localStorage.setItem("ecofinds_user", JSON.stringify(updatedUser));
 
       toast({
         title: "Profile updated",
         description: "Your profile has been successfully updated.",
-      })
+      });
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Update failed",
         description: "Failed to update profile.",
-      })
+      });
     }
   }
 
