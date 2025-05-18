@@ -71,15 +71,6 @@ export default function DashboardPage() {
   }
 
   // Calculate stats
-<<<<<<< HEAD
-  const totalListings = userProducts?.length || 0
-  const totalSales = (purchases || []).reduce((total, purchase) => {
-    if (!purchase || !purchase.products) return total;
-    
-    // Check if any of the purchased products belong to the current user
-    const userProductIds = userProducts?.map((p) => p.id) || []
-    const userSales = purchase.products.filter((p) => p && userProductIds.includes(p.productId))
-=======
   const totalListings = userProducts.length
   
   // Safely calculate total sales with null checks
@@ -87,20 +78,13 @@ export default function DashboardPage() {
     // Check if any of the purchased products belong to the current user
     const userProductIds = userProducts.map((p) => p.id)
     const userSales = (purchase.products || []).filter((p) => userProductIds.includes(p.productId))
->>>>>>> 3c5c687cdf38c69197a58043a9373261f326c88e
 
     // Calculate the total from user sales
     return (
       total +
       userSales.reduce((sum, item) => {
-<<<<<<< HEAD
-        if (!item) return sum;
-        const product = userProducts?.find((p) => p.id === item.productId)
-        return sum + (product?.price || 0) * (item.quantity || 0)
-=======
         const product = userProducts.find((p) => p.id === item.productId)
         return sum + (product?.price || 0) * (item.quantity || 1)
->>>>>>> 3c5c687cdf38c69197a58043a9373261f326c88e
       }, 0)
     )
   }, 0)

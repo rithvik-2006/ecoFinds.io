@@ -245,11 +245,7 @@ export interface CartItem {
 interface ProductContextType {
   products: Product[];
   userProducts: Product[];
-<<<<<<< HEAD
-  purchases: any[];
-=======
   cartItems: CartItem[];
->>>>>>> 3c5c687cdf38c69197a58043a9373261f326c88e
   loading: boolean;
   fetchProducts: () => Promise<void>;
   fetchUserProducts: () => Promise<void>;
@@ -341,13 +337,8 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     }
   ]);
   const [userProducts, setUserProducts] = useState<Product[]>([]);
-<<<<<<< HEAD
-  const [purchases, setPurchases] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false); // Set to false since we have initial data
-=======
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
->>>>>>> 3c5c687cdf38c69197a58043a9373261f326c88e
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -412,95 +403,6 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     }
   };
-<<<<<<< HEAD
-
-  // Add fetchPurchases function
-  const fetchPurchases = async () => {
-    if (!user) return;
-    
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('ecofinds_token');
-      
-      const response = await fetch('/api/purchases', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch purchases');
-      }
-      
-      const data = await response.json();
-      setPurchases(data.purchases || []);
-    } catch (error) {
-      console.error('Error fetching purchases:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load purchases",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load purchases when user changes
-  useEffect(() => {
-    if (user) {
-      fetchPurchases();
-    } else {
-      setPurchases([]);
-    }
-  }, [user]);
-
-  const addProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
-  try {
-    const token = localStorage.getItem('ecofinds_token');
-    
-    const response = await fetch('/api/products', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(productData)
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to create product');
-    }
-    
-    const newProduct = await response.json();
-    
-    // Update local state with the new product
-    const formattedProduct = {
-      ...newProduct,
-      id: newProduct._id
-    };
-    
-    setUserProducts([formattedProduct, ...userProducts]);
-    setProducts([formattedProduct, ...products]);
-    
-    toast({
-      title: "Success",
-      description: "Product created successfully",
-    });
-    
-    return formattedProduct;
-  } catch (error) {
-    console.error('Error creating product:', error);
-    toast({
-      variant: "destructive",
-      title: "Error",
-      description: "Failed to create product",
-    });
-    throw error;
-  }
-};
-=======
->>>>>>> 3c5c687cdf38c69197a58043a9373261f326c88e
 
   // Delete a product
   const deleteProduct = async (id: string) => {
@@ -684,30 +586,12 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-<<<<<<< HEAD
-  return (
-  <ProductContext.Provider value={{
-    products,
-    userProducts,
-    purchases,
-    loading,
-    fetchProducts,
-    fetchUserProducts,
-    fetchPurchases,
-    deleteProduct,
-    addProduct
-  }}>
-    {children}
-  </ProductContext.Provider>
-);
-=======
   // Save cart to localStorage when it changes
   useEffect(() => {
     if (user && cartItems.length > 0) {
       localStorage.setItem(`ecofinds_cart_${user.id}`, JSON.stringify(cartItems));
     }
   }, [cartItems, user]);
->>>>>>> 3c5c687cdf38c69197a58043a9373261f326c88e
 
   return (
     <ProductContext.Provider value={{
