@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { user, loading, updateProfile } = useAuth()
-  const { userProducts, purchases } = useProducts()
+  const { userProducts = [], purchases = [] } = useProducts() // Add default empty arrays
   const router = useRouter()
 
   // Redirect if not logged in
@@ -72,17 +72,19 @@ export default function DashboardPage() {
 
   // Calculate stats
   const totalListings = userProducts.length
+  
+  // Safely calculate total sales with null checks
   const totalSales = purchases.reduce((total, purchase) => {
     // Check if any of the purchased products belong to the current user
     const userProductIds = userProducts.map((p) => p.id)
-    const userSales = purchase.products.filter((p) => userProductIds.includes(p.productId))
+    const userSales = (purchase.products || []).filter((p) => userProductIds.includes(p.productId))
 
     // Calculate the total from user sales
     return (
       total +
       userSales.reduce((sum, item) => {
         const product = userProducts.find((p) => p.id === item.productId)
-        return sum + (product?.price || 0) * item.quantity
+        return sum + (product?.price || 0) * (item.quantity || 1)
       }, 0)
     )
   }, 0)
@@ -266,7 +268,7 @@ export default function DashboardPage() {
                               <p className="text-sm text-muted-foreground">Order #{purchase.id}</p>
                               <p className="text-sm font-medium">{formatCurrency(purchase.total)}</p>
                             </div>
-                            <p className="text-sm">{purchase.products.length} item(s) purchased</p>
+                            <p className="text-sm">{purchase.products?.length || 0} item(s) purchased</p>
                           </div>
                         ))}
                     </div>
