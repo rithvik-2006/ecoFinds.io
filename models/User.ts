@@ -42,7 +42,7 @@ const UserSchema = new mongoose.Schema<IUserDocument, IUserModel>(
   { timestamps: true }
 );
 
-// Hash password before saving
+// hash password before saving
 UserSchema.pre('save', async function (next) {
   const user = this;
   if (user.isModified('password')) {
@@ -50,24 +50,24 @@ UserSchema.pre('save', async function (next) {
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(user.password, salt);
     } catch (error) {
-      console.error('Error hashing password:', error);
+      console.error('Error in password hashing:', error);
       return next(error as Error);
     }
   }
   next();
 });
 
-// Method to compare passwords
+// check if password matches
 UserSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
   try {
     return await bcrypt.compare(password, this.password);
   } catch (error) {
-    console.error('Error comparing passwords:', error);
+    console.error('Error in password check:', error);
     return false;
   }
 };
 
-// Static method to find user by credentials
+// find user by email and check password
 UserSchema.statics.findByCredentials = async function (email: string, password: string) {
   try {
     const user = await this.findOne({ email });
@@ -78,13 +78,13 @@ UserSchema.statics.findByCredentials = async function (email: string, password: 
     
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      console.log('Password mismatch for user:', email);
+      console.log('Wrong password for user:', email);
       return null;
     }
     
     return user;
   } catch (error) {
-    console.error('Error in findByCredentials:', error);
+    console.error('Error in finding user:', error);
     return null;
   }
 };

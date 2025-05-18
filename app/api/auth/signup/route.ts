@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     
     const { email, password, username } = await request.json();
     
-    // Validate input
+    // check if all fields are filled
     if (!email || !password || !username) {
       return NextResponse.json(
         { error: 'All fields are required' },
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate email format
+    // check email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate password strength
+    // check password length
     if (password.length < 6) {
       return NextResponse.json(
         { error: 'Password must be at least 6 characters long' },
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       );
     }
     
-    // Check if user already exists
+    // check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       );
     }
     
-    // Create new user
+    // create new user
     const user = new User({
       email,
       password,
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     
     await user.save();
     
-    // Generate token for auto-login
+    // generate token for login
     const token = generateToken(user._id);
     
     return NextResponse.json({

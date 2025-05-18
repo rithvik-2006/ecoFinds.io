@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
     const { email, password } = await request.json()
 
-    // Validate input
+    // check if fields are filled
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // Find user and verify credentials
+    // find user and check password
     const user = await User.findByCredentials(email, password)
     if (!user) {
       return NextResponse.json(
@@ -26,10 +26,10 @@ export async function POST(request: Request) {
       )
     }
 
-    // Generate token
+    // make token
     const token = generateToken(user._id)
 
-    // Return user data and token
+    // send user data
     return NextResponse.json({
       success: true,
       user: {
