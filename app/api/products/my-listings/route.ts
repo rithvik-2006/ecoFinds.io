@@ -1,7 +1,7 @@
-// app/api/products/my-listings/route.ts
+
 import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
-import { Product } from '@/models/Product';
+import {connectDB} from '@/lib/db';
+import Product from '@/models/Product';
 import { verifyToken } from '@/lib/auth-utils';
 
 export async function GET(request: Request) {
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Get user's products
+    // Get user's products - using decoded.userId directly
     const products = await Product.find({ seller: decoded.userId })
       .sort({ createdAt: -1 })
       .lean();
