@@ -294,6 +294,10 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     try {
       const token = localStorage.getItem('ecofinds_token');
       
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
       const response = await fetch(`/api/products/${id}`, {
         method: 'DELETE',
         headers: {
@@ -301,13 +305,15 @@ export function ProductProvider({ children }: { children: ReactNode }) {
         }
       });
       
+      const data = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Failed to delete product');
+        throw new Error(data.message || 'Failed to delete product');
       }
       
       // Update local state
-      setUserProducts(userProducts.filter(product => product.id !== id));
-      setProducts(products.filter(product => product.id !== id));
+      setUserProducts(prev => prev.filter(product => product.id !== id));
+      setProducts(prev => prev.filter(product => product.id !== id));
       
       toast({
         title: "Success",
@@ -318,8 +324,9 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete product",
+        description: error instanceof Error ? error.message : "Failed to delete product",
       });
+      throw error; // Re-throw to handle in the UI if needed
     }
   };
 

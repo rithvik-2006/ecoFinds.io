@@ -57,6 +57,14 @@ export async function DELETE(
     
     await connectDB();
     
+    // Validate product ID format
+    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+      return NextResponse.json(
+        { message: 'Invalid product ID format' },
+        { status: 400 }
+      );
+    }
+    
     const product = await Product.findById(params.id);
     
     if (!product) {
@@ -67,7 +75,9 @@ export async function DELETE(
     }
     
     // Check if user owns this product
-    if (product.seller.toString() !== userId) {
+    // Handle both old and new schema formats
+    const productSellerId = product.seller ? product.seller.toString() : product.userId;
+    if (productSellerId !== userId) {
       return NextResponse.json(
         { message: 'Not authorized to delete this product' },
         { status: 403 }
@@ -83,7 +93,10 @@ export async function DELETE(
   } catch (error) {
     console.error('Product deletion error:', error);
     return NextResponse.json(
-      { message: 'Error deleting product' },
+      { 
+        message: 'Error deleting product',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
