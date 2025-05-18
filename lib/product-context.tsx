@@ -97,7 +97,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       title: "Solar Power Bank",
       description: "Portable solar charger with 10000mAh capacity.",
       price: 59.99,
-      image: "https://images.unsplash.com/photo-1583863788434-e58b8f6a2f74?w=500&auto=format",
+      image: "https://images.unsplash.com/photo-1605980776566-0486c3ac7617?w=500&auto=format",
       category: "Electronics",
       condition: "New",
       userId: "dummy-user-2",
