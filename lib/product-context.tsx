@@ -162,6 +162,10 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       const token = localStorage.getItem('ecofinds_token');
       
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
       const response = await fetch('/api/products/my-listings', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -169,10 +173,15 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to fetch your products');
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to fetch your products');
       }
       
       const data = await response.json();
+      if (!data.products) {
+        throw new Error('Invalid response format');
+      }
+      
       setUserProducts(data.products.map((p: any) => ({
         ...p,
         id: p._id
@@ -182,8 +191,9 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to load your listings",
+        description: error instanceof Error ? error.message : "Failed to load your listings",
       });
+      setUserProducts([]);
     } finally {
       setLoading(false);
     }

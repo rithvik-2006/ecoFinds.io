@@ -1,8 +1,9 @@
 // app/api/products/[id]/route.ts
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
+import { connectDB } from '@/lib/db';
 import Product from '@/models/Product';
-import { verifyToken } from '@/lib/auth-utils';
+import { verifyToken, getTokenFromHeader } from '@/lib/auth-utils';
+import mongoose from 'mongoose';
 
 // GET /api/products/[id] - Get a specific product
 export async function GET(
@@ -38,11 +39,18 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const userId = await verifyToken(request);
-    
+    const token = getTokenFromHeader(request);
+    if (!token) {
+      return NextResponse.json(
+        { message: 'No token provided' },
+        { status: 401 }
+      );
+    }
+
+    const userId = await verifyToken(token);
     if (!userId) {
       return NextResponse.json(
-        { message: 'Unauthorized' },
+        { message: 'Invalid token provided' },
         { status: 401 }
       );
     }
@@ -59,7 +67,7 @@ export async function DELETE(
     }
     
     // Check if user owns this product
-    if (product.userId !== userId) {
+    if (product.seller.toString() !== userId) {
       return NextResponse.json(
         { message: 'Not authorized to delete this product' },
         { status: 403 }
