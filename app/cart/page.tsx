@@ -12,7 +12,7 @@ import { formatCurrency } from "@/lib/utils"
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react"
 
 export default function CartPage() {
-  const { products, cartItems, removeFromCart, updateCartItemQuantity, checkout } = useProducts()
+  const { products, cart, removeFromCart, updateCartItemQuantity } = useProducts()
   const { user, loading } = useAuth()
   const router = useRouter()
 
@@ -37,7 +37,7 @@ export default function CartPage() {
   }
 
   // Get cart items with product details
-  const cartItemsWithDetails = cartItems
+  const cartItemsWithDetails = cart
     .map((item) => {
       const product = products.find((p) => p.id === item.productId)
       return {
@@ -49,11 +49,6 @@ export default function CartPage() {
 
   // Calculate total
   const subtotal = cartItemsWithDetails.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0)
-
-  const handleCheckout = async () => {
-    await checkout()
-    router.push("/purchases")
-  }
 
   return (
     <div className="container py-8">
@@ -137,7 +132,7 @@ export default function CartPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full" onClick={handleCheckout}>
+                <Button className="w-full" disabled={cartItemsWithDetails.length === 0}>
                   <ShoppingBag className="mr-2 h-4 w-4" />
                   Checkout
                 </Button>

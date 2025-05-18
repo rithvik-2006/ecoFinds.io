@@ -44,29 +44,46 @@ const UserSchema = new mongoose.Schema<IUserDocument, IUserModel>(
 UserSchema.pre('save', async function (next) {
   const user = this;
   if (user.isModified('password')) {
-    user.password = await bcrypt.hash(user.password, 10);
+    try {
+      user.password = await bcrypt.hash(user.password, 10);
+    } catch (error) {
+      console.error('Error hashing password:', error);
+      return next(error as Error);
+    }
   }
   next();
 });
 
 // Method to compare passwords
 UserSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
-  return bcrypt.compare(password, this.password);
+  try {
+    return await bcrypt.compare(password, this.password);
+  } catch (error) {
+    console.error('Error comparing passwords:', error);
+    return false;
+  }
 };
 
 // Static method to find user by credentials
 UserSchema.statics.findByCredentials = async function (email: string, password: string) {
-  const user = await this.findOne({ email });
-  if (!user) {
-    throw new Error('Invalid login credentials');
+  try {
+    const user = await this.findOne({ email });
+    if (!user) {
+      console.log('User not found:', email);
+      throw new Error('Invalid login credentials');
+    }
+    
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      console.log('Password mismatch for user:', email);
+      throw new Error('Invalid login credentials');
+    }
+    
+    return user;
+  } catch (error) {
+    console.error('Error in findByCredentials:', error);
+    throw error;
   }
-  
-  const isMatch = await user.comparePassword(password);
-  if (!isMatch) {
-    throw new Error('Invalid login credentials');
-  }
-  
-  return user;
 };
 
 export default mongoose.models.User || mongoose.model<IUserDocument, IUserModel>('User', UserSchema);

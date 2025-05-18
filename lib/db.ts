@@ -11,7 +11,7 @@ declare global {
   var mongoose: MongooseCache | undefined;
 }
 
-const MONGODB_URI ='mongodb+srv://es23btech11025:khQRVsxEKiJRnfdU@ecofinds.mbriklg.mongodb.net/';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://es23btech11025:khQRVsxEKiJRnfdU@ecofinds.mbriklg.mongodb.net/';
 
 // Initialize cache
 let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
@@ -21,7 +21,7 @@ if (!global.mongoose) {
   global.mongoose = cached;
 }
 
-async function connectDB() {
+export async function connectDB() {
   if (cached.conn) {
     return cached.conn;
   }
@@ -36,8 +36,11 @@ async function connectDB() {
     });
   }
   
-  cached.conn = await cached.promise;
-  return cached.conn;
+  try {
+    cached.conn = await cached.promise;
+    return cached.conn;
+  } catch (error) {
+    console.error('Database connection error:', error);
+    throw error;
+  }
 }
-
-export default connectDB;

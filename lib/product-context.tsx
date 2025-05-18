@@ -19,18 +19,26 @@ export interface Product {
   updatedAt: string;
 }
 
+interface CartItem {
+  productId: string;
+  quantity: number;
+}
+
 interface ProductContextType {
   products: Product[];
   userProducts: Product[];
   purchases: any[];
+  cart: CartItem[];
   loading: boolean;
   fetchProducts: () => Promise<void>;
   fetchUserProducts: () => Promise<void>;
   fetchPurchases: () => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   addProduct: (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addToCart: (productId: string, quantity: number) => void;
+  removeFromCart: (productId: string) => void;
+  updateCartItemQuantity: (productId: string, quantity: number) => void;
 }
-
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
@@ -111,6 +119,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   ]);
   const [userProducts, setUserProducts] = useState<Product[]>([]);
   const [purchases, setPurchases] = useState<any[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false); // Set to false since we have initial data
   const { user } = useAuth();
   const { toast } = useToast();
@@ -309,17 +318,69 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
+  // Add to cart
+  const addToCart = (productId: string, quantity: number) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.productId === productId);
+      
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.productId === productId
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      }
+      
+      return [...prevCart, { productId, quantity }];
+    });
+
+    toast({
+      title: "Added to cart",
+      description: "Item has been added to your cart",
+    });
+  };
+
+  // Remove from cart
+  const removeFromCart = (productId: string) => {
+    setCart(prevCart => prevCart.filter(item => item.productId !== productId));
+    
+    toast({
+      title: "Removed from cart",
+      description: "Item has been removed from your cart",
+    });
+  };
+
+  // Update cart item quantity
+  const updateCartItemQuantity = (productId: string, quantity: number) => {
+    if (quantity < 1) {
+      removeFromCart(productId);
+      return;
+    }
+
+    setCart(prevCart =>
+      prevCart.map(item =>
+        item.productId === productId
+          ? { ...item, quantity }
+          : item
+      )
+    );
+  };
+
   return (
   <ProductContext.Provider value={{
     products,
     userProducts,
     purchases,
+    cart,
     loading,
     fetchProducts,
     fetchUserProducts,
     fetchPurchases,
     deleteProduct,
-    addProduct
+    addProduct,
+    addToCart,
+    removeFromCart,
+    updateCartItemQuantity
   }}>
     {children}
   </ProductContext.Provider>
