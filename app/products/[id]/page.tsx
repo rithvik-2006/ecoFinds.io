@@ -1,21 +1,25 @@
 "use client"
 
 import { useState } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { useProducts } from "@/lib/product-context"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { Minus, Plus, ShoppingCart } from "lucide-react"
+import { CheckCircle2, Minus, Plus, ShoppingCart, X } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function ProductDetailPage() {
+  const { toast } = useToast()
+  const router = useRouter()
   const { id } = useParams<{ id: string }>()
   const { products, addToCart } = useProducts()
   const { user } = useAuth()
   const [quantity, setQuantity] = useState(1)
+  const [showCartPopup, setShowCartPopup] = useState(false)
 
   const product = products.find((p) => p.id === id)
 
@@ -39,6 +43,24 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     addToCart(product.id, quantity)
+    
+    // Show custom popup instead of toast
+    setShowCartPopup(true)
+    
+    // Also show toast for additional confirmation
+    toast({
+      title: "Added to cart!",
+      description: `${quantity} × ${product.title} has been added to your cart.`,
+    })
+    
+    // Automatically hide popup after 5 seconds
+    setTimeout(() => {
+      setShowCartPopup(false)
+    }, 5000)
+  }
+
+  const handleClosePopup = () => {
+    setShowCartPopup(false)
   }
 
   const incrementQuantity = () => {
@@ -51,6 +73,52 @@ export default function ProductDetailPage() {
 
   return (
     <div className="container py-12">
+      {/* Cart Success Popup */}
+      {showCartPopup && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
+          <div className="bg-black rounded-lg shadow-lg max-w-md w-full mx-4 overflow-hidden relative">
+            <div className="absolute top-2 right-2">
+              <Button variant="ghost" size="icon" onClick={handleClosePopup}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div className="p-6 text-center">
+              <div className="flex justify-center mb-4">
+                <CheckCircle2 className="h-16 w-16 text-green-500" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Added to Cart!</h3>
+              <div className="flex items-center justify-center gap-4 my-4">
+                {product.image && (
+                  <div className="w-20 h-20 relative rounded overflow-hidden border">
+                    <Image
+                      src={product.image}
+                      alt={product.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div className="text-left">
+                  <p className="font-medium">{product.title}</p>
+                  <p className="text-sm text-muted-foreground">Quantity: {quantity}</p>
+                  <p className="text-sm font-medium">{formatCurrency(product.price * quantity)}</p>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <Button variant="outline" className="flex-1" onClick={handleClosePopup}>
+                  Continue Shopping
+                </Button>
+                <Button className="flex-1" onClick={() => router.push('/cart')}>
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  View Cart
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="aspect-square relative rounded-lg overflow-hidden border">
