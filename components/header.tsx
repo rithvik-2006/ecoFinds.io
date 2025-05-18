@@ -1,13 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ShoppingCart, User, Menu, Search, LogIn } from "lucide-react"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
+import { useProducts } from "@/lib/product-context"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,12 +20,38 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const pathname = usePathname()
+  const router = useRouter()
   const { user, signOut } = useAuth()
+  const { products } = useProducts()
 
   const isActive = (path: string) => {
     return pathname === path
   }
+
+  // Handle search input changes
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+  }
+
+  // Handle search form submission
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`)
+      setIsSearchOpen(false)
+      setSearchQuery("")
+    }
+  }
+
+  // Focus search input when search is opened
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus()
+    }
+  }, [isSearchOpen])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -119,16 +146,22 @@ export default function Header() {
         <div className="flex items-center ml-auto gap-4">
           <div className={cn("hidden sm:block", isSearchOpen ? "flex-1" : "")}>
             {isSearchOpen ? (
-              <div className="relative">
+              <form onSubmit={handleSearchSubmit} className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
+                  ref={searchInputRef}
                   type="search"
                   placeholder="Search products..."
                   className="w-full pl-8 md:w-[300px]"
-                  autoFocus
-                  onBlur={() => setIsSearchOpen(false)}
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  onBlur={() => {
+                    if (!searchQuery.trim()) {
+                      setIsSearchOpen(false)
+                    }
+                  }}
                 />
-              </div>
+              </form>
             ) : (
               <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(true)}>
                 <Search className="h-5 w-5" />

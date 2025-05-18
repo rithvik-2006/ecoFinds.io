@@ -71,23 +71,26 @@ export default function DashboardPage() {
   }
 
   // Calculate stats
-  const totalListings = userProducts.length
-  const totalSales = purchases.reduce((total, purchase) => {
+  const totalListings = userProducts?.length || 0
+  const totalSales = (purchases || []).reduce((total, purchase) => {
+    if (!purchase || !purchase.products) return total;
+    
     // Check if any of the purchased products belong to the current user
-    const userProductIds = userProducts.map((p) => p.id)
-    const userSales = purchase.products.filter((p) => userProductIds.includes(p.productId))
+    const userProductIds = userProducts?.map((p) => p.id) || []
+    const userSales = purchase.products.filter((p) => p && userProductIds.includes(p.productId))
 
     // Calculate the total from user sales
     return (
       total +
       userSales.reduce((sum, item) => {
-        const product = userProducts.find((p) => p.id === item.productId)
-        return sum + (product?.price || 0) * item.quantity
+        if (!item) return sum;
+        const product = userProducts?.find((p) => p.id === item.productId)
+        return sum + (product?.price || 0) * (item.quantity || 0)
       }, 0)
     )
   }, 0)
 
-  const totalPurchases = purchases.filter((p) => p.userId === user.id).length
+  const totalPurchases = (purchases || []).filter((p) => p && p.userId === user.id).length
 
   return (
     <div className="container py-8">

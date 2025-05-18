@@ -37,19 +37,20 @@ export default function PurchasesPage() {
   }
 
   // Filter purchases by user
-  const userPurchases = purchases.filter((purchase) => purchase.userId === user.id)
+  const userPurchases = (purchases || []).filter((purchase) => purchase && purchase.userId === user.id)
 
   // Get product details for each purchase
   const purchasesWithDetails = userPurchases.map((purchase) => {
-    const productsWithDetails = purchase.products
+    const productsWithDetails = (purchase.products || [])
       .map((item) => {
-        const product = products.find((p) => p.id === item.productId)
+        if (!item) return null;
+        const product = products?.find((p) => p.id === item.productId)
         return {
           ...item,
           product,
         }
       })
-      .filter((item) => item.product) // Filter out any items where product wasn't found
+      .filter((item): item is NonNullable<typeof item> => item !== null) // Filter out any items where product wasn't found
 
     return {
       ...purchase,

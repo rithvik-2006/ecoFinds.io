@@ -1,22 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useProducts } from "@/lib/product-context"
 import ProductCard from "@/components/product-card"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search } from "lucide-react"
 
 type ProductFeedProps = {
   featured?: boolean
   limit?: number
   userId?: string
+  searchQuery?: string | null
 }
 
-export default function ProductFeed({ featured = false, limit, userId }: ProductFeedProps) {
+export default function ProductFeed({ featured = false, limit, userId, searchQuery }: ProductFeedProps) {
   const { products } = useProducts()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string>("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
   // Get unique categories from products
   const categories = Array.from(new Set(products.map((product) => product.category)))
@@ -24,12 +22,14 @@ export default function ProductFeed({ featured = false, limit, userId }: Product
   // Filter products based on search, category, and other criteria
   const filteredProducts = products.filter((product) => {
     // Filter by search query
-    const matchesSearch =
-      product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = searchQuery
+      ? product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category?.toLowerCase().includes(searchQuery.toLowerCase())
+      : true
 
     // Filter by category
-    const matchesCategory = selectedCategory ? product.category === selectedCategory : true
+    const matchesCategory = selectedCategory === "all" ? true : product.category === selectedCategory
 
     // Filter by user ID if provided
     const matchesUser = userId ? product.userId === userId : true
@@ -46,16 +46,6 @@ export default function ProductFeed({ featured = false, limit, userId }: Product
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search products..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="All Categories" />
