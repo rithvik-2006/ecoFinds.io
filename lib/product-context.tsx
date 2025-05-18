@@ -234,6 +234,10 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     try {
       const token = localStorage.getItem('ecofinds_token');
       
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+      
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: {
@@ -243,16 +247,16 @@ export function ProductProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(productData)
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to create product');
-      }
+      const data = await response.json();
       
-      const newProduct = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create product');
+      }
       
       // Update local state with the new product
       const formattedProduct = {
-        ...newProduct,
-        id: newProduct._id
+        ...data,
+        id: data._id
       };
       
       setUserProducts(prev => [formattedProduct, ...prev]);
@@ -269,7 +273,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create product",
+        description: error instanceof Error ? error.message : "Failed to create product",
       });
       throw error;
     }

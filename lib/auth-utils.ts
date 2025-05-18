@@ -1,5 +1,6 @@
 // lib/auth-utils.ts
 import jwt from 'jsonwebtoken';
+import { headers } from 'next/headers';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
@@ -24,10 +25,19 @@ export async function verifyToken(token: string) {
 }
 
 // Helper function to get token from request headers
-export function getTokenFromHeader(authHeader: string | null) {
-  if (!authHeader?.startsWith('Bearer ')) {
+export function getTokenFromHeader(request: Request | string | null) {
+  let authHeader: string | null = null;
+  
+  if (request instanceof Request) {
+    authHeader = request.headers.get('authorization');
+  } else {
+    authHeader = request;
+  }
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return null;
   }
+  
   const token = authHeader.split(' ')[1];
   return token || null;
 }

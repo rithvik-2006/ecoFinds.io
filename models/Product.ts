@@ -1,4 +1,3 @@
-
 import mongoose, { Schema } from 'mongoose';
 
 
@@ -29,6 +28,11 @@ const productSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: [true, 'Seller is required'],
+  },
+  status: {
+    type: String,
+    enum: ['active', 'sold', 'inactive'],
+    default: 'active',
   },
   createdAt: {
     type: Date,

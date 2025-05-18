@@ -1,49 +1,87 @@
 // app/api/products/route.ts
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import connectDB from '@/lib/db';
+import { connectDB } from '@/lib/db';
 import Product from '@/models/Product';
-import { verifyToken } from '@/lib/auth-utils';
+import { verifyToken, getTokenFromHeader } from '@/lib/auth-utils';
+import mongoose from 'mongoose';
 
 // POST /api/products - Create a new product
 export async function POST(request: Request) {
   try {
-    const userId = await verifyToken(request);
-    
-    if (!userId) {
+    // Get token from header
+    const token = getTokenFromHeader(request);
+    if (!token) {
       return NextResponse.json(
-        { message: 'Unauthorized' },
+        { message: 'No token provided' },
         { status: 401 }
       );
     }
-    
-    await connectDB();
-    
-    const data = await request.json();
-    
-    // Validate required fields
-    const { title, description, price } = data;
-    if (!title || !description || price === undefined) {
+
+    // Verify token and get user ID
+    const userId = await verifyToken(token);
+    if (!userId) {
       return NextResponse.json(
-        { message: 'Missing required fields' },
+        { message: 'Invalid token provided' },
+        { status: 401 }
+      );
+    }
+
+    // Connect to database
+    try {
+      await connectDB();
+    } catch (error) {
+      console.error('Database connection error:', error);
+      return NextResponse.json(
+        { message: 'Database connection failed', error: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+
+    // Get product data from request
+    const data = await request.json();
+    console.log('Received product data:', data);
+
+    // Validate required fields
+    const requiredFields = ['title', 'description', 'price', 'category'];
+    const missingFields = requiredFields.filter(field => !data[field]);
+    
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        { message: `Missing required fields: ${missingFields.join(', ')}` },
         { status: 400 }
       );
     }
-    
+
     // Create new product
-    const product = new Product({
-      ...data,
-      userId,
-    });
-    
-    await product.save();
-    
-    return NextResponse.json(product, { status: 201 });
-    
+    try {
+      const product = await Product.create({
+        ...data,
+        seller: new mongoose.Types.ObjectId(userId),
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      console.log('Created product:', product);
+      return NextResponse.json(product, { status: 201 });
+    } catch (error) {
+      console.error('Product creation error:', error);
+      return NextResponse.json(
+        { 
+          message: 'Failed to create product',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        },
+        { status: 500 }
+      );
+    }
   } catch (error) {
-    console.error('Product creation error:', error);
+    console.error('API error:', error);
     return NextResponse.json(
-      { message: 'Error creating product' },
+      { 
+        message: 'Internal server error',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
