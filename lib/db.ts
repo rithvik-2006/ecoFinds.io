@@ -11,7 +11,7 @@ declare global {
   var mongoose: MongooseCache | undefined;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://es23btech11025:khQRVsxEKiJRnfdU@ecofinds.mbriklg.mongodb.net/';
+const MONGODB_URI = process.env.MONGODB_URI || '';
 
 // Initialize cache
 let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
