@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import Header from "@/components/header"
 import { Providers } from "@/app/providers"
+import Icon from '@/public/mongo-svgrepo-com.svg'
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -16,7 +17,14 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "EcoFinds | Sustainable Shopping",
   description: "Find eco-friendly products for a sustainable lifestyle",
-    generator: 'v0.dev'
+  generator: 'v0.dev',
+  icons: [
+    { 
+      rel: 'icon', 
+      url: Icon.src,
+      type: 'image/svg+xml'
+    }
+  ]
 }
 
 export default function RootLayout({
