@@ -43,87 +43,91 @@ interface ProductContextType {
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 export function ProductProvider({ children }: { children: ReactNode }) {
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: "1",
-      title: "Vintage Camera",
-      description: "Beautiful vintage camera in excellent condition. Perfect for collectors.",
-      price: 299.99,
-      image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=500&auto=format",
-      category: "Electronics",
-      condition: "Used - Like New",
-      userId: "dummy-user-1",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: "2",
-      title: "Organic Cotton T-Shirt",
-      description: "100% organic cotton t-shirt, brand new with tags.",
-      price: 24.99,
-      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&auto=format",
-      category: "Clothing",
-      condition: "New",
-      userId: "dummy-user-2",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: "3",
-      title: "Bamboo Cutting Board",
-      description: "Sustainable bamboo cutting board, handmade and eco-friendly.",
-      price: 39.99,
-      image: "https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=500&auto=format",
-      category: "Home & Kitchen",
-      condition: "New",
-      userId: "dummy-user-1",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: "4",
-      title: "Recycled Glass Vase",
-      description: "Beautiful vase made from 100% recycled glass.",
-      price: 45.00,
-      image: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format",
-      category: "Home Decor",
-      condition: "New",
-      userId: "dummy-user-3",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: "5",
-      title: "Solar Power Bank",
-      description: "Portable solar charger with 10000mAh capacity.",
-      price: 59.99,
-      image: "https://5.imimg.com/data5/SELLER/Default/2023/9/343608031/RL/XW/MB/160915923/71tmdbz-g-l.jpg",
-      category: "Electronics",
-      condition: "New",
-      userId: "dummy-user-2",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: "6",
-      title: "Upcycled Denim Bag",
-      description: "Handmade bag created from recycled denim jeans.",
-      price: 34.99,
-      image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500&auto=format",
-      category: "Accessories",
-      condition: "Used - Good",
-      userId: "dummy-user-1",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ]);
+  // const [products, setProducts] = useState<Product[]>([
+  //   {
+  //     id: "1",
+  //     title: "Vintage Camera",
+  //     description: "Beautiful vintage camera in excellent condition. Perfect for collectors.",
+  //     price: 299.99,
+  //     image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=500&auto=format",
+  //     category: "Electronics",
+  //     condition: "Used - Like New",
+  //     userId: "dummy-user-1",
+  //     createdAt: new Date().toISOString(),
+  //     updatedAt: new Date().toISOString()
+  //   },
+  //   {
+  //     id: "2",
+  //     title: "Organic Cotton T-Shirt",
+  //     description: "100% organic cotton t-shirt, brand new with tags.",
+  //     price: 24.99,
+  //     image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&auto=format",
+  //     category: "Clothing",
+  //     condition: "New",
+  //     userId: "dummy-user-2",
+  //     createdAt: new Date().toISOString(),
+  //     updatedAt: new Date().toISOString()
+  //   },
+  //   {
+  //     id: "3",
+  //     title: "Bamboo Cutting Board",
+  //     description: "Sustainable bamboo cutting board, handmade and eco-friendly.",
+  //     price: 39.99,
+  //     image: "https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=500&auto=format",
+  //     category: "Home & Kitchen",
+  //     condition: "New",
+  //     userId: "dummy-user-1",
+  //     createdAt: new Date().toISOString(),
+  //     updatedAt: new Date().toISOString()
+  //   },
+  //   {
+  //     id: "4",
+  //     title: "Recycled Glass Vase",
+  //     description: "Beautiful vase made from 100% recycled glass.",
+  //     price: 45.00,
+  //     image: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format",
+  //     category: "Home Decor",
+  //     condition: "New",
+  //     userId: "dummy-user-3",
+  //     createdAt: new Date().toISOString(),
+  //     updatedAt: new Date().toISOString()
+  //   },
+  //   {
+  //     id: "5",
+  //     title: "Solar Power Bank",
+  //     description: "Portable solar charger with 10000mAh capacity.",
+  //     price: 59.99,
+  //     image: "https://5.imimg.com/data5/SELLER/Default/2023/9/343608031/RL/XW/MB/160915923/71tmdbz-g-l.jpg",
+  //     category: "Electronics",
+  //     condition: "New",
+  //     userId: "dummy-user-2",
+  //     createdAt: new Date().toISOString(),
+  //     updatedAt: new Date().toISOString()
+  //   },
+  //   {
+  //     id: "6",
+  //     title: "Upcycled Denim Bag",
+  //     description: "Handmade bag created from recycled denim jeans.",
+  //     price: 34.99,
+  //     image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500&auto=format",
+  //     category: "Accessories",
+  //     condition: "Used - Good",
+  //     userId: "dummy-user-1",
+  //     createdAt: new Date().toISOString(),
+  //     updatedAt: new Date().toISOString()
+  //   }
+  // ]);
+  const [products, setProducts] = useState<Product[]>([]); // Start with empty array
+  
   const [userProducts, setUserProducts] = useState<Product[]>([]);
   const [purchases, setPurchases] = useState<any[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false); // Set to false since we have initial data
   const { user } = useAuth();
   const { toast } = useToast();
-
+  useEffect(() => {
+    fetchProducts();
+  }, []);
   // Fetch all products
   const fetchProducts = async () => {
     try {
@@ -200,37 +204,40 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   };
 
   // Add fetchPurchases function
-  const fetchPurchases = async () => {
-    if (!user) return;
+  // const fetchPurchases = async () => {
+  //   if (!user) return;
     
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('ecofinds_token');
+  //   try {
+  //     setLoading(true);
+  //     const token = localStorage.getItem('ecofinds_token');
       
-      const response = await fetch('/api/purchases', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+  //     const response = await fetch('/api/purchases', {
+  //       headers: {
+  //         'Authorization': `Bearer ${token}`
+  //       }
+  //     });
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch purchases');
-      }
+  //     if (!response.ok) {
+  //       throw new Error('Failed to fetch purchases');
+  //     }
       
-      const data = await response.json();
-      setPurchases(data.purchases || []);
-    } catch (error) {
-      console.error('Error fetching purchases:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load purchases",
-      });
-    } finally {
-      setLoading(false);
-    }
+  //     const data = await response.json();
+  //     setPurchases(data.purchases || []);
+  //   } catch (error) {
+  //     console.error('Error fetching purchases:', error);
+  //     toast({
+  //       variant: "destructive",
+  //       title: "Error",
+  //       description: "Failed to load purchases",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const fetchPurchases = async () => {
+    // This is now handled directly in the purchases page
+    return;
   };
-
   // Load purchases when user changes
   useEffect(() => {
     if (user) {

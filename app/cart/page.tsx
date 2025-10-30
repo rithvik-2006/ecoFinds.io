@@ -132,10 +132,18 @@ export default function CartPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full" disabled={cartItemsWithDetails.length === 0}>
+                {/* <Button className="w-full" disabled={cartItemsWithDetails.length === 0}>
                   <ShoppingBag className="mr-2 h-4 w-4" />
                   Checkout
-                </Button>
+                </Button> */}
+                <Button 
+                    className="w-full" 
+                    disabled={cartItemsWithDetails.length === 0}
+                    onClick={() => router.push('/checkout')}
+                  >
+                    <ShoppingBag className="mr-2 h-4 w-4" />
+                    Checkout
+                  </Button>
               </CardFooter>
             </Card>
           </div>

@@ -1,3 +1,4 @@
+//components/product-feed.tsx
 "use client"
 
 import { useState, useEffect } from "react"

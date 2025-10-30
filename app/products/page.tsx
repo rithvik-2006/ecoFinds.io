@@ -1,4 +1,4 @@
-
+//products/page.tsx
 
 "use client"
 
